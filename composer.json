@@ -1,4 +1,5 @@
 {
+    "name": "gaylordp/unique-visitor-identifier-bundle",
     "type": "symfony-bundle",
     "license": "proprietary",
     "authors": [
