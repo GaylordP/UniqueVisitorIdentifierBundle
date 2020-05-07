@@ -1,0 +1,11 @@
+services:
+    GaylordP\UniqueVisitorIdentifierBundle\UniqueVisitorIdentifier:
+        arguments:
+            - '@request_stack'
+            - '@doctrine.orm.entity_manager'
+
+    GaylordP\UniqueVisitorIdentifierBundle\Repository\UniqueVisitorIdentifierRepository:
+        arguments:
+            - '@doctrine'
+        tags:
+            - 'doctrine.repository_service'
