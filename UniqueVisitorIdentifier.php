@@ -11,24 +11,26 @@ class UniqueVisitorIdentifier
     private $sessionName = 'uvi';
     private $sessionAntiFloodTime = 300;
 
-    private $request;
+    private $requestStack;
     private $em;
 
     public function __construct(RequestStack $requestStack, EntityManagerInterface $em)
     {
-        $this->request = $requestStack->getCurrentRequest();
+        $this->requestStack = $requestStack;
         $this->em = $em;
     }
 
     public function get(): UniqueVisitorIdentifierEntity
     {
+        $request = $this->requestStack->getCurrentRequest();
+
         $identifierEntity = null;
 
-        if (null !== $this->request->getSession()->get($this->sessionName)) {
+        if (null !== $request->getSession()->get($this->sessionName)) {
             $identifierEntity = $this
                 ->em
                 ->getRepository(UniqueVisitorIdentifierEntity::class)
-                ->findOneByUuid($this->request->getSession()->get($this->sessionName))
+                ->findOneByUuid($request->getSession()->get($this->sessionName))
             ;
         }
 
@@ -39,7 +41,7 @@ class UniqueVisitorIdentifier
             $identifierEntity = $this
                 ->em
                 ->getRepository(UniqueVisitorIdentifierEntity::class)
-                ->findByAntiFlood($this->request->server->get('REMOTE_ADDR'), $antiFloodTime)
+                ->findByAntiFlood($request->server->get('REMOTE_ADDR'), $antiFloodTime)
             ;
         }
 
@@ -48,13 +50,13 @@ class UniqueVisitorIdentifier
 
             $identifierEntity = new UniqueVisitorIdentifierEntity();
             $identifierEntity->setUuid($uuid);
-            $identifierEntity->setHttpAcceptLanguage($this->request->server->get('HTTP_ACCEPT_LANGUAGE'));
-            $identifierEntity->setHttpUserAgent($this->request->server->get('HTTP_USER_AGENT'));
-            $identifierEntity->setRemoteAddr($this->request->server->get('REMOTE_ADDR'));
+            $identifierEntity->setHttpAcceptLanguage($request->server->get('HTTP_ACCEPT_LANGUAGE'));
+            $identifierEntity->setHttpUserAgent($request->server->get('HTTP_USER_AGENT'));
+            $identifierEntity->setRemoteAddr($request->server->get('REMOTE_ADDR'));
 
             $this->em->persist($identifierEntity);
 
-            $this->request->getSession()->set($this->sessionName, $uuid);
+            $request->getSession()->set($this->sessionName, $uuid);
         }
 
         $identifierEntity->setAntiFloodDate(new \DateTime());
